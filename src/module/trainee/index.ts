@@ -1,8 +1,8 @@
-import path from 'path'
-import mergeGraphqlSchemas from 'merge-graphql-schemas'
-const fileLoader = mergeGraphqlSchemas.fileLoader
-const mergeTypes = mergeGraphqlSchemas.mergeTypes
- 
-const tranieetypesArray = fileLoader(path.join(__dirname, 'module/**/*.graphql'))
- 
-export default mergeTypes(tranieetypesArray, { all: true })
+import path from 'path';
+import { fileLoader, mergeTypes } from 'merge-graphql-schemas';
+import fs from 'fs';
+
+const tranieetypesArray = [fs.readFileSync('src/module/trainee/types.graphql','utf-8')];
+const traineeQuery = mergeTypes(tranieetypesArray, { all: true });
+
+export default traineeQuery;

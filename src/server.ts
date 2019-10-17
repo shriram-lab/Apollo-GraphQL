@@ -1,47 +1,49 @@
 import express from 'express';
+import fs from "fs";
 import { port } from './config/configuration';
-import { ApolloServer, gql } from "apollo-server";
+import { ApolloServer } from "apollo-server";
+import { mergeResolvers } from 'merge-graphql-schemas';
+import jwt from 'jsonwebtoken';
 
+import QueriesTypes from "./module/index";
+import UserResolvers from './module/user/query';
+import TranieeResolvers from './module/trainee/query';
 
-const typeDefs = gql`
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+fs.writeFileSync('./src/schema.graphql', QueriesTypes);
+const schema = fs.readFileSync('./src/schema.graphql', 'utf-8');
 
-  # This "Book" type defines the queryable fields for every book in our data source.
-  type Book {
-    title: String
-    author: String
-  }
-
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
-  type Query {
-    books: [Book]
-  }
-`;
-
-const books = [
-    {
-        title: 'Harry Potter and the Chamber of Secrets',
-        author: 'J.K. Rowling',
-    },
-    {
-        title: 'Jurassic Park',
-        author: 'Michael Crichton',
-    },
+const resolverFun = [
+    UserResolvers,
+    TranieeResolvers,
 ];
 
-const resolvers = {
-    Query: {
-        books: () => books,
-    },
-};
+const resolvers = mergeResolvers(resolverFun);
+const typeDefs = schema;
 
-const server = new ApolloServer({ typeDefs, resolvers });
-const app = express();
-app.get('/', (req, res) => {
-    res.send('The');
-});
+const getUser = (token: string) => {
+    try {
+        if (token) {
+            return jwt.verify(token, 'my-secret-from-env-file-in-prod')
+        }
+        return null
+    } catch (err) {
+        return null
+    }
+}
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }) => {
+        const tokenWithBearer = req.headers.authorization || ''
+        const token = tokenWithBearer.split(' ')[1]
+        const user = getUser(token)
+
+        return {
+            user // the generated prisma client if you are using it
+        }
+    },
+})
+
 server.listen(port, (err: any) => {
     if (err) {
         return console.error(err);

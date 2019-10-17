@@ -1,10 +1,18 @@
 type Query {
-  user: User!
+  currentUser: User!
 }
 
 type User {
   id: ID!
-  firstName: String!
-  lastName: String!
+  username: String!
 }
 
+type LoginResponse {
+  token: String
+  user: User
+}
+
+type Mutation {
+  register(username: String!, password: String!): User!
+  login(username: String!, password: String!): LoginResponse!
+}

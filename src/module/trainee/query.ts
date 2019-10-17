@@ -4,4 +4,5 @@ const TranieeResolvers = {
     },
 };
 
+
 export default TranieeResolvers;

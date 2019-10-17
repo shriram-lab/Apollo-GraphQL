@@ -1,0 +1,30 @@
+type Query {
+  trainees: Traniee!
+  currentUser: User!
+}
+
+type Traniee {
+  id: ID!
+  firstName: String!
+  lastName: String!
+}
+
+type User {
+  id: ID!
+  username: String!
+}
+
+type LoginResponse {
+  token: String
+  user: User
+}
+
+type Mutation {
+  register(username: String!, password: String!): User!
+  login(username: String!, password: String!): LoginResponse!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}
